@@ -1,0 +1,48 @@
+FROM ubuntu:14.04
+MAINTAINER Atsushi Nagase<a@ngs.io>
+
+RUN apt-get update -y && apt-get install -y software-properties-common
+RUN apt-add-repository -y ppa:nginx/stable
+RUN apt-add-repository -y ppa:brightbox/ruby-ng
+RUN apt-get update -y && apt-get install -y \
+    locales \
+    language-pack-en \
+    language-pack-en-base \
+    openssh-server \
+    sysv-rc-conf \
+    curl \
+    supervisor \
+    build-essential \
+    git-core \
+    g++ \
+    libcurl4-openssl-dev \
+    libffi-dev \
+    libmysqlclient-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libssl-dev \
+    libxml2 \
+    libxml2-dev \
+    libxslt1-dev \
+    libyaml-dev \
+    python-software-properties \
+    zlib1g-dev \
+    ruby2.2-dev \
+    ruby2.2
+
+RUN gem install bundler
+
+## Locales
+RUN [ -f /var/lib/locales/supported.d/local ] || touch /var/lib/locales/supported.d/local
+ADD files/etc/default/locale /etc/default/locale
+RUN dpkg-reconfigure --frontend noninteractive locales
+
+## SSHD
+RUN mkdir /var/run/sshd
+RUN sed -ri 's/UsePAM yes/UsePAM no/g' /etc/ssh/sshd_config
+RUN mkdir -p /var/run/sshd && chmod 755 /var/run/sshd
+ADD files/ssh/id_rsa.serverspec.pub /root/.ssh/authorized_keys
+RUN chmod -R g-rwx,o-rwx /root/.ssh
+
+CMD ["/usr/sbin/sshd", "-D"]
+EXPOSE 22
