@@ -37,12 +37,7 @@ RUN [ -f /var/lib/locales/supported.d/local ] || touch /var/lib/locales/supporte
 ADD files/etc/default/locale /etc/default/locale
 RUN dpkg-reconfigure --frontend noninteractive locales
 
-## SSHD
-RUN mkdir /var/run/sshd
-RUN sed -ri 's/UsePAM yes/UsePAM no/g' /etc/ssh/sshd_config
-RUN mkdir -p /var/run/sshd && chmod 755 /var/run/sshd
-ADD files/ssh/id_rsa.serverspec.pub /root/.ssh/authorized_keys
-RUN chmod -R g-rwx,o-rwx /root/.ssh
+COPY serverspec /var/serverspec
+RUN cd /var/serverspec && bundle install
 
-CMD ["/usr/sbin/sshd", "-D"]
-EXPOSE 22 80
+EXPOSE 80
