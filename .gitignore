@@ -11,3 +11,5 @@
 /log/*
 !/log/.keep
 /tmp
+/Dockerfile
+/docker/serverspec/vendor/bundle/*

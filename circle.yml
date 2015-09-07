@@ -18,25 +18,36 @@ general:
 dependencies:
   cache_directories:
     - ~/docker
+    - docker/serverspec/vendor/bundle
   pre:
     - docker info
     - if [[ -e ~/docker/web.tar ]]; then docker load --input ~/docker/web.tar; fi; echo ''
     - if [[ -e ~/docker/job.tar ]]; then docker load --input ~/docker/job.tar; fi; echo ''
+    - if [[ -e ~/docker/redis.tar ]]; then docker load --input ~/docker/redis.tar; fi; echo ''
+    - if [[ -e ~/docker/mysql.tar ]]; then docker load --input ~/docker/mysql.tar; fi; echo ''
     - docker pull ubuntu:14.04
+    - docker pull redis
+    - docker pull mysql
     - docker pull -a $DOCKER_REPO
     - mkdir -p ~/docker && docker save "${DOCKER_REPO}:web" > ~/docker/web.tar; echo ''
     - mkdir -p ~/docker && docker save "${DOCKER_REPO}:job" > ~/docker/job.tar; echo ''
+    - mkdir -p ~/docker && docker save "redis" > ~/docker/redis.tar; echo ''
+    - mkdir -p ~/docker && docker save "mysql" > ~/docker/mysql.tar; echo ''
+    - docker run --name dev-redis -d redis
+    - docker run --name dev-mysql -e 'MYSQL_ROOT_PASSWORD=dev' -d mysql
+    - docker ps
 checkout:
   post:
     - chmod 400 docker/files/ssh/id_rsa.serverspec
 test:
   pre:
-    - docker build -f docker/Dockerfile-web -t "${DOCKER_REPO}:web" docker
-    - docker build -f docker/Dockerfile-job -t "${DOCKER_REPO}:job" docker
+    - ./bin/rake assets:precompile
+    - DATABASE_URL=mysql2://root:dev@dev-mysql/docker-rails-example ROLE=web ./script/build-docker.sh
+    - DATABASE_URL=mysql2://root:dev@dev-mysql/docker-rails-example ROLE=job ./script/build-docker.sh
   override:
     - bin/rake test
-    - docker run -w /var/serverspec -t quay.io/atsnngs/docker-rails-example:web bundle exec rake spec
-    - docker run -w /var/serverspec -t quay.io/atsnngs/docker-rails-example:job bundle exec rake spec
+    - TARGET="${DOCKER_REPO}:web" script/run-server-spec.sh
+    - TARGET="${DOCKER_REPO}:job" script/run-server-spec.sh
 deployment:
   master:
     branch: master

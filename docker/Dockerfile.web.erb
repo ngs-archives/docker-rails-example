@@ -1,0 +1,15 @@
+<%= render file: File.join(File.dirname(__FILE__), 'Dockerfile.base.erb') %>
+
+RUN apt-get install -y nginx
+
+EXPOSE 80
+ENV ROLE=web
+ENV RAILS_ENV=production
+
+ADD docker/files/etc/supervisor/conf.d/nginx.conf /etc/supervisor/conf.d/nginx.conf
+ADD docker/files/etc/supervisor/conf.d/unicorn.conf /etc/supervisor/conf.d/unicorn.conf
+ADD docker/files/etc/nginx/nginx.conf /etc/nginx/nginx.conf
+ADD docker/files/etc/init.d/unicorn /etc/init.d/unicorn
+RUN chmod +x /etc/init.d/unicorn
+
+CMD ["/usr/bin/supervisord", "-n"]

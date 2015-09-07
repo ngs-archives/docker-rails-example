@@ -9,7 +9,6 @@ RUN apt-get update -y && apt-get install -y \
     language-pack-en \
     language-pack-en-base \
     openssh-server \
-    sysv-rc-conf \
     curl \
     supervisor \
     build-essential \
@@ -34,8 +33,14 @@ RUN gem install bundler
 
 ## Locales
 RUN [ -f /var/lib/locales/supported.d/local ] || touch /var/lib/locales/supported.d/local
-ADD files/etc/default/locale /etc/default/locale
+ADD docker/files/etc/default/locale /etc/default/locale
 RUN dpkg-reconfigure --frontend noninteractive locales
 
-COPY serverspec /var/serverspec
-RUN cd /var/serverspec && bundle install
+ADD docker/files/etc/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+
+ENV RAILS_ROOT=/var/www/app
+COPY . $RAILS_ROOT
+RUN cd $RAILS_ROOT && \
+  bundle install --deployment --path /var/www/shared/vendor/bundle --without test development && \
+  echo "SECRET_KEY_BASE=$(./bin/rake secret)" > .env && \
+  echo "DATABASE_URL=<%= ENV['DATABASE_URL'] %>" >> .env
