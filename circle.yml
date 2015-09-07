@@ -6,7 +6,7 @@ machine:
     version: 2.2.2
   environment:
     SPEC_OPTS: "--format documentation --color --format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/rspec/rspec.xml"
-    DOCKER_REPO: quay.io/ngs_/docker-rails-example
+    DOCKER_REPO: quay.io/atsnngs/docker-rails-example
   pre:
     - "echo 'Host *' >> $HOME/.ssh/config"
     - "echo 'ForwardAgent yes' >> $HOME/.ssh/config"
@@ -18,35 +18,42 @@ general:
 dependencies:
   cache_directories:
     - ~/docker
-  pre:
-    - docker info
-    - if [[ -e ~/docker/web.tar ]]; then docker load --input ~/docker/web.tar; fi
-    - if [[ -e ~/docker/job.tar ]]; then docker load --input ~/docker/job.tar; fi
-    - docker pull $DOCKER_REPO:web
-    - docker pull $DOCKER_REPO:job
-    - mkdir -p ~/docker && docker save $DOCKER_REPO:web > ~/docker/web.tar
-    - mkdir -p ~/docker && docker save $DOCKER_REPO:job > ~/docker/job.tar
-checkout:
+    - docker/serverspec/vendor/bundle
   post:
-    - chmod 400 docker/files/ssh/id_rsa.serverspec
+    - docker info
+    - if [[ -e ~/docker/web.tar ]]; then docker load --input ~/docker/web.tar; fi; echo ''
+    - if [[ -e ~/docker/job.tar ]]; then docker load --input ~/docker/job.tar; fi; echo ''
+    - if [[ -e ~/docker/redis.tar ]]; then docker load --input ~/docker/redis.tar; fi; echo ''
+    - if [[ -e ~/docker/mysql.tar ]]; then docker load --input ~/docker/mysql.tar; fi; echo ''
+    - docker pull ubuntu:14.04
+    - docker pull redis
+    - docker pull mysql
+    - docker pull -a $DOCKER_REPO
+    - mkdir -p ~/docker && docker save "${DOCKER_REPO}:web" > ~/docker/web.tar; echo ''
+    - mkdir -p ~/docker && docker save "${DOCKER_REPO}:job" > ~/docker/job.tar; echo ''
+    - mkdir -p ~/docker && docker save "redis" > ~/docker/redis.tar; echo ''
+    - mkdir -p ~/docker && docker save "mysql" > ~/docker/mysql.tar; echo ''
+    - docker run --name dev-redis -d redis
+    - docker run --name dev-mysql -e 'MYSQL_ROOT_PASSWORD=dev' -d mysql
+    - docker ps
+    - bin/rake assets:precompile
+    - DATABASE_URL=mysql2://root:dev@dev-mysql/docker-rails-example ROLE=web ./script/build-docker.sh
+    - DATABASE_URL=mysql2://root:dev@dev-mysql/docker-rails-example ROLE=job ./script/build-docker.sh
 test:
   pre:
-    - docker build -f docker/Dockerfile-web -t $DOCKER_REPO:web docker
-    - docker build -f docker/Dockerfile-job -t $DOCKER_REPO:job docker
   override:
-    - 'bin/rake test'
+    - bin/rake test
+    - TARGET="${DOCKER_REPO}:web" script/run-server-spec.sh
+    - TARGET="${DOCKER_REPO}:job" script/run-server-spec.sh
 deployment:
   master:
     branch: master
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_REPO_HOST
-      - docker push $DOCKER_REPO:web
-      - docker push $DOCKER_REPO:job
+      - docker push "${DOCKER_REPO}:web"
+      - docker push "${DOCKER_REPO}:job"
   stages:
     branch: /deployment\/.*/
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_REPO_HOST
-      - export ENV_NAME=`echo $CIRCLE_BRANCH | sed 's/deployment\///'` && docker tag $DOCKER_REPO:web $DOCKER_REPO:web-$ENV_NAME
-      - export ENV_NAME=`echo $CIRCLE_BRANCH | sed 's/deployment\///'` && docker tag $DOCKER_REPO:job $DOCKER_REPO:job-$ENV_NAME
-      - export ENV_NAME=`echo $CIRCLE_BRANCH | sed 's/deployment\///'` && docker push $DOCKER_REPO:web-$ENV_NAME
-      - export ENV_NAME=`echo $CIRCLE_BRANCH | sed 's/deployment\///'` && docker push $DOCKER_REPO:job-$ENV_NAME
+      - export ENV_NAME=`echo $CIRCLE_BRANCH | sed 's/deployment\///'` && /bin/sh script/deploy.sh

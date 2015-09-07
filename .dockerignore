@@ -1,0 +1,9 @@
+/docker
+/tmp
+/test
+/log
+/circle.yml
+/Dockerfile-*
+.DS_Store
+.*.swp
+.DS_Store

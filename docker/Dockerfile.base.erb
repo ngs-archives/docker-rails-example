@@ -9,7 +9,6 @@ RUN apt-get update -y && apt-get install -y \
     language-pack-en \
     language-pack-en-base \
     openssh-server \
-    sysv-rc-conf \
     curl \
     supervisor \
     build-essential \
@@ -30,19 +29,18 @@ RUN apt-get update -y && apt-get install -y \
     ruby2.2-dev \
     ruby2.2
 
-RUN gem install bundler
+RUN gem install bundler --no-rdoc --no-ri
 
 ## Locales
 RUN [ -f /var/lib/locales/supported.d/local ] || touch /var/lib/locales/supported.d/local
-ADD files/etc/default/locale /etc/default/locale
+ADD docker/files/etc/default/locale /etc/default/locale
 RUN dpkg-reconfigure --frontend noninteractive locales
 
-## SSHD
-RUN mkdir /var/run/sshd
-RUN sed -ri 's/UsePAM yes/UsePAM no/g' /etc/ssh/sshd_config
-RUN mkdir -p /var/run/sshd && chmod 755 /var/run/sshd
-ADD files/ssh/id_rsa.serverspec.pub /root/.ssh/authorized_keys
-RUN chmod -R g-rwx,o-rwx /root/.ssh
+ADD docker/files/etc/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 
-CMD ["/usr/sbin/sshd", "-D"]
-EXPOSE 22
+ENV RAILS_ROOT=/var/www/app
+COPY . $RAILS_ROOT
+RUN cd $RAILS_ROOT && \
+  bundle install --deployment --path /var/www/shared/vendor/bundle --without test development && \
+  echo "SECRET_KEY_BASE=$(./bin/rake secret)" > .env && \
+  echo "DATABASE_URL=<%= ENV['DATABASE_URL'] %>" >> .env
