@@ -20,20 +20,15 @@ dependencies:
     - ~/docker
     - docker/serverspec/vendor/bundle
   override:
+    - sudo pip install awscli
     - bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
     - docker info
-    - if [[ -e ~/docker/web.tar ]]; then docker load --input ~/docker/web.tar; fi; echo ''
-    - if [[ -e ~/docker/job.tar ]]; then docker load --input ~/docker/job.tar; fi; echo ''
-    - if [[ -e ~/docker/redis.tar ]]; then docker load --input ~/docker/redis.tar; fi; echo ''
-    - if [[ -e ~/docker/mysql.tar ]]; then docker load --input ~/docker/mysql.tar; fi; echo ''
+    - if [[ -e ~/docker/images.tar ]]; then docker load --input ~/docker/images.tar; fi; echo ''
     - docker pull ubuntu:14.04
     - docker pull redis
     - docker pull mysql
     - docker pull -a $DOCKER_REPO
-    - mkdir -p ~/docker && docker save "${DOCKER_REPO}:web" > ~/docker/web.tar; echo ''
-    - mkdir -p ~/docker && docker save "${DOCKER_REPO}:job" > ~/docker/job.tar; echo ''
-    - mkdir -p ~/docker && docker save "redis" > ~/docker/redis.tar; echo ''
-    - mkdir -p ~/docker && docker save "mysql" > ~/docker/mysql.tar; echo ''
+    - mkdir -p ~/docker && docker save -o ~/docker/images.tar "${DOCKER_REPO}:job" "${DOCKER_REPO}:web" redis mysql; echo ''
     - docker run --name dev-redis -d redis
     - docker run --name dev-mysql -e 'MYSQL_ROOT_PASSWORD=dev' -d mysql
     - docker ps

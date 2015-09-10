@@ -27,13 +27,13 @@ RUN apt-get update -y && apt-get install -y \
     python-software-properties \
     zlib1g-dev \
     ruby2.2-dev \
-    ruby2.2
+    ruby2.2<% if ENV['ROLE'] == 'web' %> nginx<% end %>
 
 RUN gem install bundler --no-rdoc --no-ri
 
 ## Locales
 RUN [ -f /var/lib/locales/supported.d/local ] || touch /var/lib/locales/supported.d/local
-ADD docker/files/etc/default/locale /etc/default/locale
+RUN echo 'LANG="en_US.UTF-8"' > /etc/default/locale
 RUN dpkg-reconfigure --frontend noninteractive locales
 
 ADD docker/files/etc/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
@@ -44,3 +44,18 @@ RUN cd $RAILS_ROOT && \
   bundle install --deployment --path /var/www/shared/vendor/bundle --without test development && \
   echo "SECRET_KEY_BASE=$(./bin/rake secret)" > .env && \
   echo "DATABASE_URL=<%= ENV['DATABASE_URL'] %>" >> .env
+
+
+ENV RAILS_ENV=production
+ENV ROLE=<%= ENV['ROLE'] %>
+
+<% if ENV['ROLE'] == 'web' %>
+EXPOSE 80
+ADD docker/files/etc/supervisor/conf.d/nginx.conf /etc/supervisor/conf.d/nginx.conf
+ADD docker/files/etc/supervisor/conf.d/unicorn.conf /etc/supervisor/conf.d/unicorn.conf
+ADD docker/files/etc/nginx/nginx.conf /etc/nginx/nginx.conf
+ADD docker/files/etc/init.d/unicorn /etc/init.d/unicorn
+RUN chmod +x /etc/init.d/unicorn
+<% end %>
+
+CMD ["/usr/bin/supervisord", "-n"]

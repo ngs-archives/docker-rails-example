@@ -1,5 +1,0 @@
-<%= render file: File.join(File.dirname(__FILE__), 'Dockerfile.base.erb') %>
-
-ENV ROLE=job
-ENV RAILS_ENV=production
-CMD ["/usr/bin/supervisord", "-n"]

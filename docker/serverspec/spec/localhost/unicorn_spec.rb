@@ -10,4 +10,9 @@ describe 'unicorn', if: ENV['ROLE'] == 'web' do
   describe file('/var/run/unicorn.sock') do
     it { is_expected.to be_socket }
   end
+
+  describe file('/var/www/app/log/unicorn.stderr.log') do
+    it { is_expected.to be_file }
+    its(:content) { is_expected.to eq '' }
+  end
 end
