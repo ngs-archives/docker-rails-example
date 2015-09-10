@@ -16,7 +16,7 @@ docker run \
   --link dev-mysql:mysql \
   --link dev-redis:redis \
   -w /mnt/serverspec -t $TARGET \
-  sh -c 'service supervisor start && bundle install --path=vendor/bundle && bundle exec rake spec'
+  sh -c 'service supervisor start && bundle install --path=vendor/bundle && sleep 10 && bundle exec rake spec'
 
 set +eu
 [ $CI ] || docker rm "dbmigrate-${HASH}"
