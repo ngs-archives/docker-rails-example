@@ -23,12 +23,11 @@ dependencies:
     - sudo pip install awscli
     - bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
     - docker info
-    - if [[ -e ~/docker/images.tar ]]; then docker load --input ~/docker/images.tar; fi; echo ''
     - docker pull ubuntu:14.04
     - docker pull redis
     - docker pull mysql
-    - docker pull -a $DOCKER_REPO
-    - mkdir -p ~/docker && docker save -o ~/docker/images.tar "${DOCKER_REPO}:job" "${DOCKER_REPO}:web" redis mysql; echo ''
+    - docker pull "${DOCKER_REPO}:web"
+    - docker pull "${DOCKER_REPO}:job"
     - docker run --name dev-redis -d redis
     - docker run --name dev-mysql -e 'MYSQL_ROOT_PASSWORD=dev' -d mysql
     - docker ps

@@ -13,6 +13,9 @@ describe 'unicorn', if: ENV['ROLE'] == 'web' do
 
   describe file('/var/www/app/log/unicorn.stderr.log') do
     it { is_expected.to be_file }
-    its(:content) { is_expected.to eq '' }
+    its(:content) { is_expected.to contain 'listening on addr=/var/run/unicorn.sock fd=' }
+    its(:content) { is_expected.to contain 'worker=0 ready' }
+    its(:content) { is_expected.to contain 'worker=1 ready' }
+    its(:content) { is_expected.to contain 'master process ready' }
   end
 end
