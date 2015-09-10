@@ -6,7 +6,7 @@ TIMEOUT=${TIMEOUT-60}
 APP_ROOT=/var/www/app
 PID=/var/run/unicorn.pid
 RAILS_ENV=production
-CMD="bundle exec unicorn -c $APP_ROOT/config/unicorn.rb -E $RAILS_ENV"
+CMD="bin/unicorn_rails -c $APP_ROOT/config/unicorn.rb -E $RAILS_ENV"
 action="$1"
 set -u
 
