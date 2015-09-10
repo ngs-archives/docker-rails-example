@@ -33,8 +33,8 @@ dependencies:
     - docker run --name dev-mysql -e 'MYSQL_ROOT_PASSWORD=dev' -d mysql
     - docker ps
     - bin/rake assets:precompile
-    - DATABASE_URL=mysql2://root:dev@dev-mysql/docker-rails-example ROLE=web ./script/build-docker.sh
-    - DATABASE_URL=mysql2://root:dev@dev-mysql/docker-rails-example ROLE=job ./script/build-docker.sh
+    - ROLE=web ./script/build-docker.sh
+    - ROLE=job ./script/build-docker.sh
     - docker run --name serverspec-bundle-install -v "$(pwd)/docker/serverspec"\:/mnt/serverspec -w /mnt/serverspec -t "${DOCKER_REPO}:job" bundle install --path=vendor/bundle
 test:
   override:
