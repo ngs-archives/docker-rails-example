@@ -19,7 +19,8 @@ dependencies:
   cache_directories:
     - ~/docker
     - docker/serverspec/vendor/bundle
-  post:
+  override:
+    - bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
     - docker info
     - if [[ -e ~/docker/web.tar ]]; then docker load --input ~/docker/web.tar; fi; echo ''
     - if [[ -e ~/docker/job.tar ]]; then docker load --input ~/docker/job.tar; fi; echo ''
@@ -39,6 +40,7 @@ dependencies:
     - bin/rake assets:precompile
     - DATABASE_URL=mysql2://root:dev@dev-mysql/docker-rails-example ROLE=web ./script/build-docker.sh
     - DATABASE_URL=mysql2://root:dev@dev-mysql/docker-rails-example ROLE=job ./script/build-docker.sh
+    - docker run --name serverspec-bundle-install -v "$(pwd)/docker/serverspec"\:/mnt/serverspec -w /mnt/serverspec -t "${DOCKER_REPO}:job" bundle install --path=vendor/bundle
 test:
   pre:
   override:
