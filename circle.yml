@@ -21,7 +21,9 @@ dependencies:
     - docker/serverspec/vendor/bundle
   override:
     - sudo pip install awscli
+    - sudo apt-get update && sudo apt-get install jq
     - bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
+    - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_REPO_HOST
     - docker info
     - docker pull ubuntu:14.04
     - docker pull redis
@@ -32,24 +34,26 @@ dependencies:
     - docker run --name dev-mysql -e 'MYSQL_ROOT_PASSWORD=dev' -d mysql
     - docker ps
     - bin/rake assets:precompile
-    - DATABASE_URL=mysql2://root:dev@dev-mysql/docker-rails-example ROLE=web ./script/build-docker.sh
-    - DATABASE_URL=mysql2://root:dev@dev-mysql/docker-rails-example ROLE=job ./script/build-docker.sh
+    - ROLE=web ./script/build-docker.sh
+    - ROLE=job ./script/build-docker.sh
     - docker run --name serverspec-bundle-install -v "$(pwd)/docker/serverspec"\:/mnt/serverspec -w /mnt/serverspec -t "${DOCKER_REPO}:job" bundle install --path=vendor/bundle
 test:
-  pre:
   override:
     - bin/rake test
     - TARGET="${DOCKER_REPO}:web" script/run-server-spec.sh
     - TARGET="${DOCKER_REPO}:job" script/run-server-spec.sh
+  post:
+    - docker tag "${DOCKER_REPO}:web" "${DOCKER_REPO}:web-b${CIRCLE_BUILD_NUM}"
+    - docker tag "${DOCKER_REPO}:job" "${DOCKER_REPO}:job-b${CIRCLE_BUILD_NUM}"
+    - docker push "${DOCKER_REPO}:web-b${CIRCLE_BUILD_NUM}"
+    - docker push "${DOCKER_REPO}:job-b${CIRCLE_BUILD_NUM}"
 deployment:
   master:
     branch: master
     commands:
-      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_REPO_HOST
       - docker push "${DOCKER_REPO}:web"
       - docker push "${DOCKER_REPO}:job"
   stages:
     branch: /deployment\/.*/
     commands:
-      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_REPO_HOST
       - export ENV_NAME=`echo $CIRCLE_BRANCH | sed 's/deployment\///'` && /bin/sh script/deploy.sh

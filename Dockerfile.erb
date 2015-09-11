@@ -29,25 +29,43 @@ RUN apt-get update -y && apt-get install -y \
     ruby2.2-dev \
     ruby2.2
 
+ENV \
+  BUNDLE_PATH=/var/www/shared/vendor/bundle \
+  BUNDLE_WITHOUT='test development' \
+  RAILS_ENV=production \
+  RAILS_ROOT=/var/www/app
+
 RUN gem install bundler --no-rdoc --no-ri
+RUN mkdir -p $RAILS_ROOT
+ADD Gemfile* "${RAILS_ROOT}/"
+RUN cd $RAILS_ROOT && \
+  mkdir -p /var/www/shared/vendor/bundle && \
+  mkdir -p vendor && \
+  rm -rf vendor/bundle && \
+  ln -s /var/www/shared/vendor/bundle vendor/bundle && \
+  (bundle check || bundle install --deployment)
 
 ## Locales
 RUN [ -f /var/lib/locales/supported.d/local ] || touch /var/lib/locales/supported.d/local
 RUN echo 'LANG="en_US.UTF-8"' > /etc/default/locale
 RUN dpkg-reconfigure --frontend noninteractive locales
 
-RUN apt-get install -y nginx
-
 ADD docker/files/etc/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 
-ENV RAILS_ROOT=/var/www/app
-COPY . $RAILS_ROOT
-RUN cd $RAILS_ROOT && \
-  bundle install --deployment --path /var/www/shared/vendor/bundle --without test development && \
-  echo "SECRET_KEY_BASE=$(./bin/rake secret)" > .env && \
-  echo "DATABASE_URL=<%= ENV['DATABASE_URL'] %>" >> .env
+<% if ENV['ROLE'] == 'web' %>
+RUN apt-get install -y nginx
+<% end %>
 
-ENV RAILS_ENV=production
+COPY . $RAILS_ROOT
+
+RUN cd $RAILS_ROOT && \
+  mkdir -p /var/www/shared/vendor/bundle && \
+  mkdir -p vendor && \
+  rm -rf vendor/bundle && \
+  ln -s /var/www/shared/vendor/bundle vendor/bundle && \
+  (bundle check || bundle install --deployment) && \
+  (echo "SECRET_KEY_BASE=$(./bin/rake secret)" > .env)
+
 ENV ROLE=<%= ENV['ROLE'] %>
 
 <% if ENV['ROLE'] == 'web' %>
@@ -59,4 +77,4 @@ ADD docker/files/etc/init.d/unicorn /etc/init.d/unicorn
 RUN chmod +x /etc/init.d/unicorn
 <% end %>
 
-CMD ["/usr/bin/supervisord", "-n"]
+CMD ["/bin/sh", "-c", "echo \"DATABASE_URL=${DATABASE_URL}\" >> /var/www/app/.env && /usr/bin/supervisord -n"]
