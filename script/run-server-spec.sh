@@ -19,7 +19,7 @@ docker run \
   --link dev-mysql:mysql \
   --link dev-redis:redis \
   -w /mnt/serverspec -t $TARGET \
-  sh -c 'echo "DATABASE_URL=${DATABASE_URL}" >> /var/www/app/.env && service supervisor start && bundle install --path=vendor/bundle && sleep 1 && bundle exec rake spec'
+  sh -c 'echo "DATABASE_URL=${DATABASE_URL}" >> /var/www/app/.env && service supervisor start && bundle install --path=vendor/bundle && sleep 10 && bundle exec rake spec'
 
 set +eu
 [ $CI ] || docker rm "dbmigrate-${HASH}"
