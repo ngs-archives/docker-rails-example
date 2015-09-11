@@ -39,7 +39,7 @@ dependencies:
     - docker run --name serverspec-bundle-install -v "$(pwd)/docker/serverspec"\:/mnt/serverspec -w /mnt/serverspec -t "${DOCKER_REPO}:job" bundle install --path=vendor/bundle
 test:
   override:
-    - bin/rake test
+    - bin/rake spec
     - TARGET="${DOCKER_REPO}:web" script/run-server-spec.sh
     - TARGET="${DOCKER_REPO}:job" script/run-server-spec.sh
   post:

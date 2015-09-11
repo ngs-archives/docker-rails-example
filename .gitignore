@@ -14,3 +14,4 @@
 /Dockerfile
 /docker/serverspec/vendor/bundle/*
 /.ecs-task-definition.json
+/.env
