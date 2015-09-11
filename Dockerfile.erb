@@ -37,12 +37,12 @@ ENV \
 
 RUN gem install bundler --no-rdoc --no-ri
 RUN mkdir -p $RAILS_ROOT
-ADD Gemfile* "${RAILS_ROOT}/"
+RUN (echo <%= raw `cat Gemfile`.inspect %> > "${RAILS_ROOT}/Gemfile") && (echo <%= raw `cat Gemfile.lock`.inspect %> > "${RAILS_ROOT}/Gemfile.lock")
 RUN cd $RAILS_ROOT && \
-  mkdir -p /var/www/shared/vendor/bundle && \
+  mkdir -p $BUNDLE_PATH && \
   mkdir -p vendor && \
   rm -rf vendor/bundle && \
-  ln -s /var/www/shared/vendor/bundle vendor/bundle && \
+  ln -s $BUNDLE_PATH vendor/bundle && \
   (bundle check || bundle install --deployment)
 
 ## Locales
@@ -59,10 +59,10 @@ RUN apt-get install -y nginx
 COPY . $RAILS_ROOT
 
 RUN cd $RAILS_ROOT && \
-  mkdir -p /var/www/shared/vendor/bundle && \
+  mkdir -p $BUNDLE_PATH && \
   mkdir -p vendor && \
   rm -rf vendor/bundle && \
-  ln -s /var/www/shared/vendor/bundle vendor/bundle && \
+  ln -s $BUNDLE_PATH vendor/bundle && \
   (bundle check || bundle install --deployment) && \
   (echo "SECRET_KEY_BASE=$(./bin/rake secret)" > .env)
 
