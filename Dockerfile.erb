@@ -31,7 +31,6 @@ RUN apt-get update -y && apt-get install -y \
 
 ENV \
   BUNDLE_PATH=/var/www/shared/vendor/bundle \
-  BUNDLE_WITHOUT='test development' \
   RAILS_ENV=production \
   RAILS_ROOT=/var/www/app
 
@@ -43,7 +42,7 @@ RUN cd $RAILS_ROOT && \
   mkdir -p vendor && \
   rm -rf vendor/bundle && \
   ln -s $BUNDLE_PATH vendor/bundle && \
-  (bundle check || bundle install --deployment)
+  (bundle check || bundle install --without test development darwin assets --jobs 4 --retry 3 --deployment)
 
 ## Locales
 RUN [ -f /var/lib/locales/supported.d/local ] || touch /var/lib/locales/supported.d/local
@@ -63,7 +62,7 @@ RUN cd $RAILS_ROOT && \
   mkdir -p vendor && \
   rm -rf vendor/bundle && \
   ln -s $BUNDLE_PATH vendor/bundle && \
-  (bundle check || bundle install --deployment) && \
+  (bundle check || bundle install --without test development darwin assets --jobs 4 --retry 3 --deployment) && \
   (echo "SECRET_KEY_BASE=$(./bin/rake secret)" > .env)
 
 ENV ROLE=<%= ENV['ROLE'] %>
