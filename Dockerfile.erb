@@ -76,4 +76,4 @@ ADD docker/files/etc/init.d/unicorn /etc/init.d/unicorn
 RUN chmod +x /etc/init.d/unicorn
 <% end %>
 
-CMD ["/bin/sh", "-c", "echo \"DATABASE_URL=${DATABASE_URL}\" >> /var/www/app/.env && /usr/bin/supervisord -n"]
+CMD ["/bin/sh", "-c", "'echo \\"DATABASE_URL=${DATABASE_URL}\\" >> /var/www/app/.env && /usr/bin/supervisord -n'"]
