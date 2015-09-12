@@ -36,7 +36,7 @@ ENV \
 
 RUN gem install bundler --no-rdoc --no-ri
 RUN mkdir -p $RAILS_ROOT
-RUN (echo <%= raw `cat Gemfile`.inspect %> > "${RAILS_ROOT}/Gemfile") && (echo <%= raw `cat Gemfile.lock`.inspect %> > "${RAILS_ROOT}/Gemfile.lock")
+RUN (echo <%= `cat Gemfile`.inspect %> > "${RAILS_ROOT}/Gemfile") && (echo <%= `cat Gemfile.lock`.inspect %> > "${RAILS_ROOT}/Gemfile.lock")
 RUN cd $RAILS_ROOT && \
   mkdir -p $BUNDLE_PATH && \
   mkdir -p vendor && \
@@ -49,7 +49,7 @@ RUN [ -f /var/lib/locales/supported.d/local ] || touch /var/lib/locales/supporte
 RUN echo 'LANG="en_US.UTF-8"' > /etc/default/locale
 RUN dpkg-reconfigure --frontend noninteractive locales
 
-RUN echo <%= raw `cat docker/files/etc/supervisor/supervisord.conf`.inspect %> > /etc/supervisor/supervisord.conf
+RUN echo <%= `cat docker/files/etc/supervisor/supervisord.conf`.inspect %> > /etc/supervisor/supervisord.conf
 
 <% if ENV['ROLE'] == 'web' %>
 RUN apt-get update -y && apt-get install -y nginx

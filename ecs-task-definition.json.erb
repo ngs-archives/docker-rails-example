@@ -31,5 +31,11 @@
       "environment": [{ "name": "DATABASE_URL", "value": "<%= ENV['DATABASE_URL'] %>" }],
       "essential": true
     }
+  ],
+  "volumes": [
+    {
+      "name": "logs",
+      "host": { "sourcePath": "/var/log/task-123" }
+    }
   ]
 }
