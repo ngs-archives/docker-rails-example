@@ -14,6 +14,7 @@ describe 'sidekiq', if: ENV['ROLE'] == 'job' do
   # end
 
   describe command(%q{cd $RAILS_ROOT && ./bin/rails runner -e production "p BooksJob.perform_later(author: 'ngs', title: 'Hoge')" 2>&1}) do
+    after(:all) { sleep 5 }
     its(:exit_status) { is_expected.to eq 0 }
     its(:stdout) { is_expected.to match /#<BooksJob:0x[0-9a-f]{14}/ }
   end
