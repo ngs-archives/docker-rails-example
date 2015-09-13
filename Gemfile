@@ -55,6 +55,8 @@ group :test do
   gem 'simplecov', require: false
   gem 'database_rewinder'
   gem 'timecop'
+  gem 'capybara'
+  gem 'capybara-webkit'
 end
 
 group :development do
