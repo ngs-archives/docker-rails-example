@@ -1,0 +1,38 @@
+{
+  "family": "ngs-docker-rails-example-<%= ENV['ENV_NAME'] %>",
+  "containerDefinitions": [
+    {
+      "image": "<%= ENV['DOCKER_REPO'] %>:web-b<%= ENV['CIRCLE_BUILD_NUM'] %>",
+      "name": "docker-rails-example-web",
+      "cpu": 1,
+      "memory": 128,
+      "essential": true,
+      "portMappings": [{ "hostPort": 80, "containerPort": 80, "protocol": "tcp" }],
+      "mountPoints": [{ "containerPath": "/var/www/app/log", "sourceVolume": "log", "readOnly": false }],
+      "environment": [
+        { "name": "DATABASE_URL", "value": "<%= ENV['DATABASE_URL'] %>" },
+        { "name": "REDIS_URL", "value": "<%= ENV['REDIS_URL'] %>" }
+      ],
+      "essential": true
+    },
+    {
+      "image": "<%= ENV['DOCKER_REPO'] %>:job-b<%= ENV['CIRCLE_BUILD_NUM'] %>",
+      "name": "docker-rails-example-job",
+      "cpu": 1,
+      "memory": 128,
+      "essential": true,
+      "mountPoints": [{ "containerPath": "/var/www/app/log", "sourceVolume": "log", "readOnly": false }],
+      "environment": [
+        { "name": "DATABASE_URL", "value": "<%= ENV['DATABASE_URL'] %>" },
+        { "name": "REDIS_URL", "value": "<%= ENV['REDIS_URL'] %>" }
+      ],
+      "essential": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "log",
+      "host": { "sourcePath": "/var/log/rails" }
+    }
+  ]
+}

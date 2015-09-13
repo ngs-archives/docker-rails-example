@@ -1,12 +1,12 @@
 /docker
 /tmp
 /test
-/log/*
+/log/*.log
 !/log/.keep
 /circle.yml
 /Dockerfile
 /vendor/bunlder/*
 .DS_Store
 .*.swp
-/ecs-task-definition.json.erb
+/ecs-task-definitions
 /.ecs-task-definition.json
