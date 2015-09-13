@@ -1,5 +1,5 @@
 #!/bin/sh
 set -eu
 
-ROLE=$ROLE ./bin/rake dockerfile:build
+erb Dockerfile.erb > Dockerfile
 docker build -t "${DOCKER_REPO}:${ROLE}" .

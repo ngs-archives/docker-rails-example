@@ -1,0 +1,22 @@
+{
+  "family": "ngs-docker-rails-example-db-migrate-<%= ENV['ENV_NAME'] %>",
+  "containerDefinitions": [
+    {
+      "image": "<%= ENV['DOCKER_REPO'] %>:job-b<%= ENV['CIRCLE_BUILD_NUM'] %>",
+      "name": "docker-rails-example-db-migrate",
+      "cpu": 1,
+      "memory": 128,
+      "essential": true,
+      "command": ["./bin/rake", "db:migrate"],
+      "mountPoints": [{ "containerPath": "/var/www/app/log", "sourceVolume": "log", "readOnly": false }],
+      "environment": [{ "name": "DATABASE_URL", "value": "<%= ENV['DATABASE_URL'] %>" }],
+      "essential": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "log",
+      "host": { "sourcePath": "/var/log/rails" }
+    }
+  ]
+}
