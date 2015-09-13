@@ -1,5 +1,6 @@
 class BooksController < ApplicationController
   before_action :set_book, only: [:show, :edit, :update, :destroy]
+  protect_from_forgery :except => [:create_delayed]
 
   # GET /books
   # GET /books.json
@@ -35,6 +36,11 @@ class BooksController < ApplicationController
         format.json { render json: @book.errors, status: :unprocessable_entity }
       end
     end
+  end
+
+  def create_delayed
+    @job = BooksJob.perform_later(book_params)
+    render json: @job, status: :created
   end
 
   # PATCH/PUT /books/1

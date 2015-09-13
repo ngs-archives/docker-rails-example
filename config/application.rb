@@ -8,7 +8,10 @@ end
 
 module DockerRailsExample
   class Application < Rails::Application
+    config.paths.add File.join('app', 'jobs'), glob: File.join('**', '*.rb')
+    config.autoload_paths += Dir[Rails.root.join('app', 'jobs', '*')]
     config.active_record.raise_in_transactional_callbacks = true
+    config.active_job.queue_adapter = :sidekiq
     config.generators do|g|
       g.fixture = true
       g.fixture_replacement :factory_girl
