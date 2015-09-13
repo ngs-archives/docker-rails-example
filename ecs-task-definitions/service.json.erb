@@ -18,7 +18,7 @@
     {
       "image": "<%= ENV['DOCKER_REPO'] %>:job-b<%= ENV['CIRCLE_BUILD_NUM'] %>",
       "name": "docker-rails-example-job",
-      "cpu": 4,
+      "cpu": 1,
       "memory": 128,
       "essential": true,
       "mountPoints": [{ "containerPath": "/var/www/app/log", "sourceVolume": "log", "readOnly": false }],
