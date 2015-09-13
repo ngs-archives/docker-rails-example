@@ -5,9 +5,8 @@ DATABASE_URL=$(eval "echo \$DATABASE_URL_$(echo $ENV_NAME | awk '{print toupper(
 TASK_FAMILY="ngs-docker-rails-example-${ENV_NAME}"
 SERVICE_NAME="ngs-docker-rails-example-service-${ENV_NAME}"
 
-DATABASE_URL=$DATABASE_URL erb ecs-task-definition.json.erb > .ecs-task-definition.json
+DATABASE_URL=$DATABASE_URL erb ecs-task-definitions/service.json.erb > .ecs-task-definition.json
 TASK_DEFINITION_JSON=$(aws ecs register-task-definition --family $TASK_FAMILY --cli-input-json "file://$(pwd)/.ecs-task-definition.json")
-
 TASK_REVISION=$(echo $TASK_DEFINITION_JSON | jq .taskDefinition.revision)
 DESIRED_COUNT=$(aws ecs describe-services --services $SERVICE_NAME | jq '.services[0].desiredCount')
 

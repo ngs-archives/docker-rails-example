@@ -9,6 +9,7 @@
       "essential": true,
       "entryPoint": ["/bin/sh"],
       "command": ["-c \"cd $RAILS_ROOT && ./bin/rake db:migrate\""],
+      "mountPoints": [{ "containerPath": "/var/www/app/log", "sourceVolume": "log", "readOnly": false }],
       "environment": [{ "name": "DATABASE_URL", "value": "<%= ENV['DATABASE_URL'] %>" }],
       "essential": true
     },
@@ -19,6 +20,7 @@
       "memory": 128,
       "essential": true,
       "portMappings": [{ "hostPort": 80, "containerPort": 80, "protocol": "tcp" }],
+      "mountPoints": [{ "containerPath": "/var/www/app/log", "sourceVolume": "log", "readOnly": false }],
       "environment": [{ "name": "DATABASE_URL", "value": "<%= ENV['DATABASE_URL'] %>" }],
       "essential": true
     },
@@ -28,8 +30,15 @@
       "cpu": 4,
       "memory": 128,
       "essential": true,
+      "mountPoints": [{ "containerPath": "/var/www/app/log", "sourceVolume": "log", "readOnly": false }],
       "environment": [{ "name": "DATABASE_URL", "value": "<%= ENV['DATABASE_URL'] %>" }],
       "essential": true
+    }
+  ],
+  "volumes": [
+    {
+      "name": "log",
+      "host": { "sourcePath": "/var/log/rails" }
     }
   ]
 }
