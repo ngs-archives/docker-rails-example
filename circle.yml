@@ -36,7 +36,12 @@ dependencies:
     - bin/rake assets:precompile
     - ROLE=web ./script/build-docker.sh
     - ROLE=job ./script/build-docker.sh
-    - docker run --name serverspec-bundle-install -v "$(pwd)/docker/serverspec"\:/mnt/serverspec -w /mnt/serverspec -t "${DOCKER_REPO}:job" bundle install --path=vendor/bundle
+    - |
+      docker run --name serverspec-bundle-install \
+        -v "$(pwd)/docker/serverspec"\:/mnt/serverspec \
+        -w /mnt/serverspec \
+        -t "${DOCKER_REPO}:job" \
+        bundle install --path=vendor/bundle
 test:
   override:
     - bin/rake spec
@@ -56,4 +61,8 @@ deployment:
   stages:
     branch: /deployment\/.*/
     commands:
-      - export ENV_NAME=`echo $CIRCLE_BRANCH | sed 's/deployment\///'` && /bin/sh script/deploy.sh
+      - |
+        export ENV_NAME=`echo $CIRCLE_BRANCH | sed 's/deployment\///'` && \
+        /bin/sh script/ecs-deploy-db-migrate.sh && \
+        sleep 5 && \
+        /bin/sh script/ecs-deploy-services.sh
