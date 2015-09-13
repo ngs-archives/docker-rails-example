@@ -22,7 +22,10 @@
       "memory": 128,
       "essential": true,
       "mountPoints": [{ "containerPath": "/var/www/app/log", "sourceVolume": "log", "readOnly": false }],
-      "environment": [{ "name": "DATABASE_URL", "value": "<%= ENV['DATABASE_URL'] %>" }],
+      "environment": [
+        { "name": "DATABASE_URL", "value": "<%= ENV['DATABASE_URL'] %>" },
+        { "name": "REDIS_URL", "value": "<%= ENV['REDIS_URL'] %>" }
+      ],
       "essential": true
     }
   ],
