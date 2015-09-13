@@ -75,6 +75,10 @@ ADD docker/files/etc/supervisor/conf.d/unicorn.conf /etc/supervisor/conf.d/unico
 ADD docker/files/etc/nginx/nginx.conf /etc/nginx/nginx.conf
 ADD docker/files/etc/init.d/unicorn /etc/init.d/unicorn
 RUN chmod +x /etc/init.d/unicorn
+<% elsif ENV['ROLE'] == 'job' %>
+ADD docker/files/etc/supervisor/conf.d/sidekiq.conf /etc/supervisor/conf.d/sidekiq.conf
+ADD docker/files/etc/init.d/sidekiq /etc/init.d/sidekiq
+RUN chmod +x /etc/init.d/sidekiq
 <% end %>
 
 CMD ["/bin/sh", "/var/www/app/script/run-supervisord.sh"]
