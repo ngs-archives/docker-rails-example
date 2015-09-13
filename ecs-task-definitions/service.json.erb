@@ -2,21 +2,9 @@
   "family": "ngs-docker-rails-example-<%= ENV['ENV_NAME'] %>",
   "containerDefinitions": [
     {
-      "image": "<%= ENV['DOCKER_REPO'] %>:job-b<%= ENV['CIRCLE_BUILD_NUM'] %>",
-      "name": "docker-rails-example-db-migrate",
-      "cpu": 4,
-      "memory": 128,
-      "essential": true,
-      "entryPoint": ["/bin/sh"],
-      "command": ["-c \"cd $RAILS_ROOT && ./bin/rake db:migrate\""],
-      "mountPoints": [{ "containerPath": "/var/www/app/log", "sourceVolume": "log", "readOnly": false }],
-      "environment": [{ "name": "DATABASE_URL", "value": "<%= ENV['DATABASE_URL'] %>" }],
-      "essential": true
-    },
-    {
       "image": "<%= ENV['DOCKER_REPO'] %>:web-b<%= ENV['CIRCLE_BUILD_NUM'] %>",
       "name": "docker-rails-example-web",
-      "cpu": 4,
+      "cpu": 1,
       "memory": 128,
       "essential": true,
       "portMappings": [{ "hostPort": 80, "containerPort": 80, "protocol": "tcp" }],

@@ -4,7 +4,7 @@
     {
       "image": "<%= ENV['DOCKER_REPO'] %>:job-b<%= ENV['CIRCLE_BUILD_NUM'] %>",
       "name": "docker-rails-example-db-migrate",
-      "cpu": 4,
+      "cpu": 1,
       "memory": 128,
       "essential": true,
       "command": ["./bin/rake", "db:migrate"],
