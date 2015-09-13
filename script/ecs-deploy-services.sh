@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
 
+CLUSTER=default
 UPPER_ENV_NAME=$(echo $ENV_NAME | awk '{print toupper($0)}')
 DATABASE_URL=$(eval "echo \$DATABASE_URL_${UPPER_ENV_NAME}")
 REDIS_URL=$(eval "echo \$REDIS_URL_${UPPER_ENV_NAME}")
@@ -18,10 +19,9 @@ if [ ${DESIRED_COUNT} = "0" ]; then
     DESIRED_COUNT="1"
 fi
 
-SERVICE_JSON=$(aws ecs update-service --cluster default --service ${SERVICE_NAME} --task-definition ${TASK_FAMILY}:${TASK_REVISION} --desired-count ${DESIRED_COUNT})
+SERVICE_JSON=$(aws ecs update-service --cluster ${CLUSTER} --service ${SERVICE_NAME} --task-definition ${TASK_FAMILY}:${TASK_REVISION} --desired-count ${DESIRED_COUNT})
 echo $SERVICE_JSON | jq .
-LB_NAME=$(echo $SERVICE_JSON | jq -r '.service.loadBalancers[0].loadBalancerName')
-LB_JSON=$(aws elb describe-load-balancers --load-balancer-name "${LB_NAME}")
-DNS_NAME=$(echo $LB_JSON | jq -r '.LoadBalancerDescriptions[0].DNSName')
 
-echo $DNS_NAME
+TASK_ARN=$(aws ecs list-tasks --cluster ${CLUSTER} --service ${SERVICE_NAME} | jq -r '.taskArns[0]')
+TASK_JSON=$(aws ecs stop-task --task ${TASK_ARN})
+echo $TASK_JSON | jq .
